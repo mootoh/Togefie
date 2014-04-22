@@ -7,8 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		FCDBEF70190513BD003B5047 /* camera.png in Resources */ = {isa = PBXBuildFile; fileRef = FCDBEF6F190513BD003B5047 /* camera.png */; };
-		FCDBEF72190513CE003B5047 /* setting.png in Resources */ = {isa = PBXBuildFile; fileRef = FCDBEF71190513CE003B5047 /* setting.png */; };
 		FCEE384C1904C7A70020EE49 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FCEE384B1904C7A70020EE49 /* Foundation.framework */; };
 		FCEE384E1904C7A70020EE49 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FCEE384D1904C7A70020EE49 /* CoreGraphics.framework */; };
 		FCEE38501904C7A70020EE49 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FCEE384F1904C7A70020EE49 /* UIKit.framework */; };
@@ -38,8 +36,6 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		FCDBEF6F190513BD003B5047 /* camera.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = camera.png; sourceTree = "<group>"; };
-		FCDBEF71190513CE003B5047 /* setting.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = setting.png; sourceTree = "<group>"; };
 		FCEE38481904C7A70020EE49 /* Togefie.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Togefie.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		FCEE384B1904C7A70020EE49 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		FCEE384D1904C7A70020EE49 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
@@ -138,8 +134,6 @@
 		FCEE38521904C7A70020EE49 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
-				FCDBEF71190513CE003B5047 /* setting.png */,
-				FCDBEF6F190513BD003B5047 /* camera.png */,
 				FCEE38531904C7A70020EE49 /* Togefie-Info.plist */,
 				FCEE38541904C7A70020EE49 /* InfoPlist.strings */,
 				FCEE38571904C7A70020EE49 /* main.m */,
@@ -243,9 +237,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				FCEE38641904C7A70020EE49 /* Images.xcassets in Resources */,
-				FCDBEF70190513BD003B5047 /* camera.png in Resources */,
 				FCEE38561904C7A70020EE49 /* InfoPlist.strings in Resources */,
-				FCDBEF72190513CE003B5047 /* setting.png in Resources */,
 				FCEE385F1904C7A70020EE49 /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

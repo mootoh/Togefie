@@ -132,14 +132,14 @@ didReceiveInvitationFromPeer:(MCPeerID *)peerID
     self.cameraUI = cameraUI;
 
     UIButton *shutterButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [shutterButton setImage:[UIImage imageNamed:@"camera.png"] forState:UIControlStateNormal];
+    [shutterButton setImage:[UIImage imageNamed:@"camera"] forState:UIControlStateNormal];
     [shutterButton addTarget:self action:@selector(shoot) forControlEvents:UIControlEventTouchUpInside];
     shutterButton.frame = CGRectMake(160, 320, 66, 66);
     shutterButton.center = CGPointMake(self.view.center.x, 500);
     [cameraUI.view addSubview:shutterButton];
 
     UIButton *settingButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [settingButton setImage:[UIImage imageNamed:@"setting.png"] forState:UIControlStateNormal];
+    [settingButton setImage:[UIImage imageNamed:@"setting"] forState:UIControlStateNormal];
     [settingButton addTarget:self action:@selector(shoot) forControlEvents:UIControlEventTouchUpInside];
     settingButton.frame = CGRectMake(320-66, 12, 66, 66);
     [cameraUI.view addSubview:settingButton];
