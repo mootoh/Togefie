@@ -14,3 +14,13 @@
     #import <UIKit/UIKit.h>
     #import <Foundation/Foundation.h>
 #endif
+
+#define k_NICKNAME_CHANGED @"nickname_changed"
+#define k_IMAGE_RECEIVED @"image_received"
+#define k_SERVICE_TYPE @"togefie-service"
+#define k_PEER_JOINED @"peer_joined"
+#define k_PEER_LEFT @"peer_left"
+
+#define kProgressCancelledKeyPath @"cancelled"
+#define kProgressCompletedUnitCountKeyPath @"completedUnitCount"
+

@@ -7,9 +7,11 @@
 //
 
 #import <UIKit/UIKit.h>
+@class Postman;
 
 @interface AppDelegate : UIResponder <UIApplicationDelegate>
 
 @property (strong, nonatomic) UIWindow *window;
+@property (nonatomic) Postman *postman;
 
 @end

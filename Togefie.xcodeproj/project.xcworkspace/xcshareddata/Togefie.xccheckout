@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>0DB46753-ED97-4B12-BD87-D23A897D2096</string>
+	<key>IDESourceControlProjectName</key>
+	<string>Togefie</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>14CB2693-C8B3-4BF2-BE98-BC3D24DA60BD</key>
+		<string>ssh://github.com/mootoh/Togefie.git</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>Togefie.xcodeproj/project.xcworkspace</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>14CB2693-C8B3-4BF2-BE98-BC3D24DA60BD</key>
+		<string>../..</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>ssh://github.com/mootoh/Togefie.git</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>110</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>14CB2693-C8B3-4BF2-BE98-BC3D24DA60BD</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>14CB2693-C8B3-4BF2-BE98-BC3D24DA60BD</string>
+			<key>IDESourceControlWCCName</key>
+			<string>Togefie</string>
+		</dict>
+	</array>
+</dict>
+</plist>

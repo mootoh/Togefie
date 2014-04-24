@@ -7,12 +7,17 @@
 //
 
 #import "AppDelegate.h"
+#import "Postman.h"
 
 @implementation AppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
-    // Override point for customization after application launch.
+    self.postman = [[Postman alloc] init];
+
+    [self.postman startAdvertise];
+    [self.postman startBrowse];
+
     return YES;
 }
 							
