@@ -1,0 +1,4 @@
+- Fix view hierarchy between received image and captured one
+- Custom advertising for dialog-less connection UI
+- Resize a received image correctly
+- Show a progress in receiving image
