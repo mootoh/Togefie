@@ -14,7 +14,6 @@
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
     self.postman = [[Postman alloc] init];
-
     [self.postman startAdvertise];
     [self.postman startBrowse];
 

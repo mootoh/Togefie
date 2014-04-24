@@ -15,7 +15,6 @@
 
 @interface CameraViewController ()
 @property (nonatomic) UIImageView *receivedView;
-@property (nonatomic) NSMutableArray *peers;
 @end
 
 @implementation CameraViewController
@@ -30,9 +29,6 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    // Do any additional setup after loading the view.
-
-    self.peers = [NSMutableArray array];
 
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(imageReceived:) name:k_IMAGE_RECEIVED object:nil];
 
@@ -41,6 +37,12 @@
 
     if (! [UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera]) {
         NSLog(@"camera not available");
+
+        UIButton *settingButton = [UIButton buttonWithType:UIButtonTypeCustom];
+        [settingButton setImage:[UIImage imageNamed:@"setting"] forState:UIControlStateNormal];
+        [settingButton addTarget:self action:@selector(gotoSetting) forControlEvents:UIControlEventTouchUpInside];
+        settingButton.frame = CGRectMake(320-66, 12, 66, 66);
+        [self.view addSubview:settingButton];
         return;
     }
 
@@ -91,7 +93,7 @@
 }
 
 - (void) dismissReceivedImage {
-    [UIView animateWithDuration:1 animations:^() {
+    [UIView animateWithDuration:0.3 animations:^() {
         self.receivedView.alpha = 0.0;
     } completion:^(BOOL finished) {
         self.receivedView.hidden = YES;
@@ -157,7 +159,7 @@
         [pvc didMoveToParentViewController:self];
     }
 
-    [UIView animateWithDuration:1 animations:^() {
+    [UIView animateWithDuration:0.3 animations:^() {
         preview.alpha = 1.0;
     }];
     
@@ -200,7 +202,7 @@
         // Check here for the position of the view when the user stops touching the screen
         // Set "CGFloat finalX" and "CGFloat finalY", depending on the last position of the touch
         // Use this to animate the position of your view to where you want
-        [UIView animateWithDuration: 1
+        [UIView animateWithDuration: 0.3
                               delay: 0
                             options: UIViewAnimationOptionCurveEaseOut
                          animations:^{
@@ -257,6 +259,8 @@
     });
 }
 
+#pragma mark - Notification Callbacks
+
 - (void) imageReceived:(NSNotification *)notification {
     NSDictionary *dict = notification.userInfo;
     NSURL *localURL = dict[@"url"];
@@ -277,12 +281,10 @@
     UILabel *joined = [[UILabel alloc] initWithFrame:CGRectMake(240, 300, 80, 32)];
     joined.text = nickname;
 
-    [self.peers addObject:nickname];
-    
     dispatch_async(dispatch_get_main_queue(), ^() {
         [self.cameraOverlayView addSubview:joined];
 
-        [UIView animateWithDuration:8 animations:^() {
+        [UIView animateWithDuration:1 animations:^() {
             joined.frame = CGRectMake(400, 300, 80, 32);
         }];
 
@@ -293,17 +295,6 @@
     NSDictionary *dict = notification.userInfo;
     NSString *nickname = dict[@"nickname"];
     NSLog(@"peer left %@", nickname);
-
-    int idx = [self.peers indexOfObjectPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
-        if ([nickname isEqualToString:obj]) {
-            *stop = YES;
-            return YES;
-        }
-        return NO;
-    }];
-    if (idx != NSNotFound)
-        [self.peers removeObjectAtIndex:idx];
-
 }
 
 /*
