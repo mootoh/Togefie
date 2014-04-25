@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		920638951909D58E004160B9 /* Utils.m in Sources */ = {isa = PBXBuildFile; fileRef = 920638941909D58E004160B9 /* Utils.m */; };
 		FC485755190641A1009A36A4 /* CameraViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FC485754190641A1009A36A4 /* CameraViewController.m */; };
 		FC48575919064584009A36A4 /* SettingViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FC48575719064584009A36A4 /* SettingViewController.m */; };
 		FC48575A19064584009A36A4 /* SettingViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = FC48575819064584009A36A4 /* SettingViewController.xib */; };
@@ -41,6 +42,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		920638931909D58E004160B9 /* Utils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Utils.h; sourceTree = "<group>"; };
+		920638941909D58E004160B9 /* Utils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Utils.m; sourceTree = "<group>"; };
 		FC485753190641A1009A36A4 /* CameraViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CameraViewController.h; sourceTree = "<group>"; };
 		FC485754190641A1009A36A4 /* CameraViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CameraViewController.m; sourceTree = "<group>"; };
 		FC48575619064584009A36A4 /* SettingViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SettingViewController.h; sourceTree = "<group>"; };
@@ -148,6 +151,8 @@
 				FC8180511908FD240013772E /* PeerViewController.h */,
 				FC8180521908FD240013772E /* PeerViewController.m */,
 				FC8180531908FD240013772E /* PeerViewController.xib */,
+				920638931909D58E004160B9 /* Utils.h */,
+				920638941909D58E004160B9 /* Utils.m */,
 			);
 			path = Togefie;
 			sourceTree = "<group>";
@@ -288,6 +293,7 @@
 				FC8180541908FD240013772E /* PeerViewController.m in Sources */,
 				FCEE385C1904C7A70020EE49 /* AppDelegate.m in Sources */,
 				FCEE38581904C7A70020EE49 /* main.m in Sources */,
+				920638951909D58E004160B9 /* Utils.m in Sources */,
 				FC48575919064584009A36A4 /* SettingViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -420,7 +426,7 @@
 				INFOPLIST_FILE = "Togefie/Togefie-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE = "BA70906E-86D8-44F7-8DE1-A7FA2751D61A";
+				PROVISIONING_PROFILE = "";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Debug;
@@ -437,7 +443,7 @@
 				INFOPLIST_FILE = "Togefie/Togefie-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE = "BA70906E-86D8-44F7-8DE1-A7FA2751D61A";
+				PROVISIONING_PROFILE = "";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Release;

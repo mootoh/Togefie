@@ -12,35 +12,34 @@
 #import "AppDelegate.h"
 #import "Postman.h"
 #import "PeerViewController.h"
+#import "Utils.h"
 
 @interface CameraViewController ()
 @property (nonatomic) UIImageView *receivedView;
-@property (nonatomic) NSMutableArray *peers;
 @end
 
 @implementation CameraViewController
 
-- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil {
-    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
-    if (self) {
-        // Custom initialization
-    }
-    return self;
-}
-
 - (void)viewDidLoad {
     [super viewDidLoad];
-    // Do any additional setup after loading the view.
 
-    self.peers = [NSMutableArray array];
-
+    AppDelegate *ad = [UIApplication sharedApplication].delegate;
+    [ad.postman startAdvertise:self];
+    [ad.postman startBrowse];
+    
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(imageReceived:) name:k_IMAGE_RECEIVED object:nil];
-
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(peerJoined:) name:k_PEER_JOINED object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(peerLeft:) name:k_PEER_LEFT object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(profileImageReceived:) name:k_PROFILE_IMAGE_RECEIVED object:nil];
 
     if (! [UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera]) {
         NSLog(@"camera not available");
+
+        UIButton *settingButton = [UIButton buttonWithType:UIButtonTypeCustom];
+        [settingButton setImage:[UIImage imageNamed:@"setting"] forState:UIControlStateNormal];
+        [settingButton addTarget:self action:@selector(gotoSetting) forControlEvents:UIControlEventTouchUpInside];
+        settingButton.frame = CGRectMake(320-66, 12, 66, 66);
+        [self.view addSubview:settingButton];
         return;
     }
 
@@ -91,7 +90,7 @@
 }
 
 - (void) dismissReceivedImage {
-    [UIView animateWithDuration:1 animations:^() {
+    [UIView animateWithDuration:0.3 animations:^() {
         self.receivedView.alpha = 0.0;
     } completion:^(BOOL finished) {
         self.receivedView.hidden = YES;
@@ -146,10 +145,9 @@
 
     int offsetX = 32;
     for (MCPeerID *peerID in postman.session.connectedPeers) {
-        PeerViewController *pvc = [[PeerViewController alloc] initWithNibName:nil bundle:nil];
+        PeerViewController *pvc = [[PeerViewController alloc] initWithNibName:@"PeerViewController" bundle:nil];
         pvc.view.frame = CGRectMake(offsetX, 426-64, 92, 92);
         pvc.peerID = peerID;
-
         pvc.nameLabel.text = peerID.displayName;
 
         [self addChildViewController:pvc];
@@ -157,7 +155,7 @@
         [pvc didMoveToParentViewController:self];
     }
 
-    [UIView animateWithDuration:1 animations:^() {
+    [UIView animateWithDuration:0.3 animations:^() {
         preview.alpha = 1.0;
     }];
     
@@ -172,12 +170,14 @@
         [self.previewView removeFromSuperview];
         self.previewView = nil;
     }
+    /*
     for (UIViewController *vc in self.childViewControllers) {
         if ([vc isKindOfClass:[PeerViewController class]]) {
             [vc.view removeFromSuperview];
             [vc removeFromParentViewController];
         }
     }
+     */
 }
 
 - (void) panPhoto:(UIGestureRecognizer *)gestureRecognizer
@@ -200,7 +200,7 @@
         // Check here for the position of the view when the user stops touching the screen
         // Set "CGFloat finalX" and "CGFloat finalY", depending on the last position of the touch
         // Use this to animate the position of your view to where you want
-        [UIView animateWithDuration: 1
+        [UIView animateWithDuration: 0.3
                               delay: 0
                             options: UIViewAnimationOptionCurveEaseOut
                          animations:^{
@@ -216,21 +216,9 @@
     [recognizer setTranslation:CGPointMake(0, 0) inView:self.view];
 }
 
-// http://stackoverflow.com/questions/2658738/the-simplest-way-to-resize-an-uiimage
-+ (UIImage *)imageWithImage:(UIImage *)image scaledToSize:(CGSize)newSize {
-    //UIGraphicsBeginImageContext(newSize);
-    // In next line, pass 0.0 to use the current device's pixel scaling factor (and thus account for Retina resolution).
-    // Pass 1.0 to force exact pixel size.
-    UIGraphicsBeginImageContextWithOptions(newSize, NO, 0.0);
-    [image drawInRect:CGRectMake(0, 0, newSize.width, newSize.height)];
-    UIImage *newImage = UIGraphicsGetImageFromCurrentImageContext();
-    UIGraphicsEndImageContext();
-    return newImage;
-}
-
 - (void) sendPhoto:(UIImage *)image
 {
-    UIImage *smallerImage = [CameraViewController imageWithImage:image scaledToSize:CGSizeMake(32, 24)];
+    UIImage *smallerImage = [Utils imageWithImage:image scaledToSize:CGSizeMake(32, 24)];
     NSData *jpgData = UIImageJPEGRepresentation(smallerImage, 1.0);
     
     // send the photo
@@ -257,6 +245,8 @@
     });
 }
 
+#pragma mark - Notification Callbacks
+
 - (void) imageReceived:(NSNotification *)notification {
     NSDictionary *dict = notification.userInfo;
     NSURL *localURL = dict[@"url"];
@@ -272,39 +262,75 @@
 
 - (void) peerJoined:(NSNotification *)notification {
     NSDictionary *dict = notification.userInfo;
-    NSString *nickname = dict[@"nickname"];
-    NSLog(@"peer %@ joined", nickname);
+    MCPeerID *peerID = dict[@"peerID"];
+    NSLog(@"peer %@ joined", peerID.displayName);
+    /*
     UILabel *joined = [[UILabel alloc] initWithFrame:CGRectMake(240, 300, 80, 32)];
     joined.text = nickname;
+     */
 
-    [self.peers addObject:nickname];
-    
+    for (UIViewController *vc in self.childViewControllers) {
+        if (! [vc isKindOfClass:[PeerViewController class]])
+            continue;
+
+        PeerViewController *pvc = (PeerViewController *)vc;
+        if (pvc && [pvc.peerID isEqual:peerID]) {
+            NSLog(@"PeerView already exists, skip");
+            return;
+        }
+    }
+
     dispatch_async(dispatch_get_main_queue(), ^() {
-        [self.cameraOverlayView addSubview:joined];
+        PeerViewController *pvc = [[PeerViewController alloc] initWithNibName:@"PeerViewController" bundle:nil];
+        
+        pvc.view.frame = CGRectMake(32, 426-64, 92, 92);
+        pvc.peerID = peerID;
+        pvc.nameLabel.text = peerID.displayName;
 
-        [UIView animateWithDuration:8 animations:^() {
-            joined.frame = CGRectMake(400, 300, 80, 32);
-        }];
-
+        [self addChildViewController:pvc];
+        [self.view addSubview:pvc.view];
+        [pvc didMoveToParentViewController:self];
     });
 }
 
 - (void) peerLeft:(NSNotification *)notification {
     NSDictionary *dict = notification.userInfo;
-    NSString *nickname = dict[@"nickname"];
-    NSLog(@"peer left %@", nickname);
+    MCPeerID *peerID = dict[@"peerID"];
+    NSLog(@"peer left %@", peerID.displayName);
 
-    int idx = [self.peers indexOfObjectPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
-        if ([nickname isEqualToString:obj]) {
-            *stop = YES;
-            return YES;
+    for (UIViewController *vc in self.childViewControllers) {
+        if (! [vc isKindOfClass:[PeerViewController class]])
+            continue;
+        PeerViewController *pvc = (PeerViewController *)vc;
+        if (pvc && [pvc.peerID isEqual:peerID]) {
+            [pvc removeFromParentViewController];
+            [pvc.view removeFromSuperview];
+            return;
         }
-        return NO;
-    }];
-    if (idx != NSNotFound)
-        [self.peers removeObjectAtIndex:idx];
-
+    }
 }
+
+- (void) profileImageReceived:(NSNotification *)notification {
+    NSDictionary *dict = notification.userInfo;
+    NSURL *localURL = dict[@"url"];
+    MCPeerID *peerID = dict[@"peerID"];
+    
+    NSData *data = [NSData dataWithContentsOfURL:localURL];
+    UIImage *image = [UIImage imageWithData:data];
+    
+    for (UIViewController *vc in self.childViewControllers) {
+        if (! [vc isKindOfClass:[PeerViewController class]])
+            continue;
+        PeerViewController *pvc = (PeerViewController *)vc;
+        if (pvc && [pvc.peerID isEqual:peerID]) {
+            dispatch_async(dispatch_get_main_queue(), ^() {
+                pvc.imageView.image = image;
+            });
+            return;
+        }
+    }
+}
+
 
 /*
 #pragma mark - Navigation
@@ -316,5 +342,29 @@
     // Pass the selected object to the new view controller.
 }
 */
+
+#pragma mark - Advertiser delegates
+
+- (void)advertiser:(MCNearbyServiceAdvertiser *)advertiser didNotStartAdvertisingPeer:(NSError *)error {
+    NSLog(@"didNotStartAdvertisingPeer: error=%@", error);
+}
+
+- (void)advertiser:(MCNearbyServiceAdvertiser *)advertiser didReceiveInvitationFromPeer:(MCPeerID *)peerID withContext:(NSData *)context invitationHandler:(void (^)(BOOL, MCSession *))invitationHandler {
+    PeerViewController *pvc = [[PeerViewController alloc] initWithNibName:@"PeerViewController" bundle:nil];
+
+    pvc.view.frame = CGRectMake(32, 426-64, 92, 92);
+    pvc.peerID = peerID;
+    pvc.nameLabel.text = peerID.displayName;
+    UIImage *image = [UIImage imageWithData:context];
+    if (image)
+        pvc.imageView.image = image;
+    
+    [self addChildViewController:pvc];
+    [self.view addSubview:pvc.view];
+    [pvc didMoveToParentViewController:self];
+
+    AppDelegate *ad = [UIApplication sharedApplication].delegate;
+    invitationHandler(YES, ad.postman.session);
+}
 
 @end

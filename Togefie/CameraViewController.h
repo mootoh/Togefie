@@ -7,11 +7,15 @@
 //
 
 #import <UIKit/UIKit.h>
+#import <MultipeerConnectivity/MultipeerConnectivity.h>
 
-@interface CameraViewController : UIImagePickerController <UIImagePickerControllerDelegate>
+@class MCPeerID;
+@class MCSession;
+
+@interface CameraViewController : UIImagePickerController <UIImagePickerControllerDelegate, MCNearbyServiceAdvertiserDelegate>
 
 @property (nonatomic) UIImageView *previewView;
 
-+ (UIImage *)imageWithImage:(UIImage *)image scaledToSize:(CGSize)newSize;
+- (void)didReceiveInvitationFromPeer:(MCPeerID *)peerID withContext:(NSData *)context withSession:(MCSession *)session invitationHandler:(void (^)(BOOL accept, MCSession *session))invitationHandler;
 
 @end

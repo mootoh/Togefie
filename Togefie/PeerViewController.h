@@ -12,5 +12,6 @@
 @interface PeerViewController : UIViewController
 @property (weak, nonatomic) IBOutlet UILabel *nameLabel;
 @property (weak, nonatomic) IBOutlet UIProgressView *progressView;
+@property (weak, nonatomic) IBOutlet UIImageView *imageView;
 @property (nonatomic) MCPeerID *peerID;
 @end
