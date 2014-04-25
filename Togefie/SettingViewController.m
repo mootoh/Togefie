@@ -7,6 +7,7 @@
 //
 
 #import "SettingViewController.h"
+#import "Utils.h"
 
 static const int k_IMAGE_VIEW_TAG = 7;
 
@@ -15,15 +16,6 @@ static const int k_IMAGE_VIEW_TAG = 7;
 @end
 
 @implementation SettingViewController
-
-- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
-{
-    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
-    if (self) {
-        // Custom initialization
-    }
-    return self;
-}
 
 - (void)viewDidLoad
 {
@@ -75,8 +67,14 @@ static const int k_IMAGE_VIEW_TAG = 7;
     UIImageView *imageView = (UIImageView *)[self.view viewWithTag:k_IMAGE_VIEW_TAG];
 
     UIImage *pickedImage = (UIImage *)[info objectForKey:UIImagePickerControllerOriginalImage];
+    UIImage *smallerImage = [Utils imageWithImage:pickedImage scaledToSize:CGSizeMake(32, 24)];
+
     imageView.image = pickedImage;
     [picker.view removeFromSuperview];
+
+    [Utils saveToCache:smallerImage name:@"image-profile" callback:^(NSURL *url) {
+        [[NSUserDefaults standardUserDefaults] setURL:url forKey:k_PROFILE_IMAGE_KEY];
+    }];
 }
 
 - (void) imagePickerControllerDidCancel:(UIImagePickerController *)picker {

@@ -10,4 +10,7 @@
 
 @interface Utils : NSObject
 
++ (void) saveToCache:(UIImage *)image name:(NSString *)name callback:(void (^)(NSURL *))callback;
++ (UIImage *)imageWithImage:(UIImage *)image scaledToSize:(CGSize)newSize;
+
 @end

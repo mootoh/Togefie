@@ -8,13 +8,15 @@
 
 #import <Foundation/Foundation.h>
 #import <MultipeerConnectivity/MultipeerConnectivity.h>
+#import "CameraViewController.h"
 
 @interface Postman : NSObject <MCSessionDelegate, MCNearbyServiceBrowserDelegate>
 
 @property (nonatomic) NSString *nickname;
 @property (nonatomic) MCSession *session;
+@property (nonatomic) CameraViewController *cameraViewController; // FIXME
 
-- (void) startAdvertise;
+- (void) startAdvertise:(id <MCNearbyServiceAdvertiserDelegate>)advertiserDelegate;
 - (void) startBrowse;
 
 - (void) sendPhoto:(NSURL *)url;

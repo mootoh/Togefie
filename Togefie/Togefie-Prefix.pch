@@ -20,7 +20,10 @@
 #define k_SERVICE_TYPE @"togefie-service"
 #define k_PEER_JOINED @"peer_joined"
 #define k_PEER_LEFT @"peer_left"
+#define k_PROFILE_IMAGE_RECEIVED @"profile_image_received"
 
 #define kProgressCancelledKeyPath @"cancelled"
 #define kProgressCompletedUnitCountKeyPath @"completedUnitCount"
 
+#define k_NICKNAME_KEY @"nickname"
+#define k_PROFILE_IMAGE_KEY @"profile_image"

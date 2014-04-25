@@ -8,6 +8,7 @@
 
 #import "Postman.h"
 #import <MultipeerConnectivity/MultipeerConnectivity.h>
+#import "CameraViewController.h"
 
 @interface Postman ()
 @property (nonatomic) MCAdvertiserAssistant *advertiserAssistant;
@@ -15,6 +16,7 @@
 @property (nonatomic) MCNearbyServiceBrowser *browser;
 @property (nonatomic) NSDate *advertiseStartedAt;
 @property (nonatomic) MCPeerID *peerID;
+@property (nonatomic) NSMutableSet *invitedPeers;
 @end
 
 @implementation Postman
@@ -23,8 +25,10 @@
     self = [super init];
     if (self) {
         self.nickname = [UIDevice currentDevice].name;
+        self.invitedPeers = [NSMutableSet set];
 
-        self.peerID = [[MCPeerID alloc] initWithDisplayName:[UIDevice currentDevice].name];
+        NSString *savedNick = [[NSUserDefaults standardUserDefaults] valueForKey:k_NICKNAME_KEY];
+        self.peerID = [[MCPeerID alloc] initWithDisplayName:savedNick ? savedNick : [UIDevice currentDevice].name];
 
         self.session = [[MCSession alloc] initWithPeer:self.peerID securityIdentity:nil encryptionPreference:MCEncryptionOptional];
         self.session.delegate = self;
@@ -36,19 +40,24 @@
 
 - (void) nicknameChanged:(NSNotification *)notification {
     NSDictionary *dict = notification.userInfo;
-    NSLog(@"nickname changed to: %@", dict[@"nickname"]);
-    [[NSUserDefaults standardUserDefaults] setObject:dict[@"nickname"] forKey:@"nickname"];
+    NSString *newNick = dict[@"nickname"];
+    NSLog(@"nickname changed to: %@", newNick);
+    [[NSUserDefaults standardUserDefaults] setObject:newNick forKey:k_NICKNAME_KEY];
     [[NSUserDefaults standardUserDefaults] synchronize];
 }
 
 #pragma mark - Advertiser
 
-- (void) startAdvertise {
+- (void) startAdvertise:(id <MCNearbyServiceAdvertiserDelegate>)advertiserDelegate {
     self.advertiseStartedAt = [NSDate date];
     NSDictionary *discoveryInfo = @{@"timestamp": [NSString stringWithFormat:@"%lf", [self.advertiseStartedAt timeIntervalSince1970]]};
-
+/*
     self.advertiserAssistant = [[MCAdvertiserAssistant alloc] initWithServiceType:k_SERVICE_TYPE discoveryInfo:discoveryInfo session:self.session];
     [self.advertiserAssistant start];
+ */
+    self.advertiser = [[MCNearbyServiceAdvertiser alloc] initWithPeer:self.peerID discoveryInfo:discoveryInfo serviceType:k_SERVICE_TYPE];
+    self.advertiser.delegate = advertiserDelegate;
+    [self.advertiser startAdvertisingPeer];
 }
 
 #pragma mark - Browser
@@ -83,7 +92,16 @@
         }
     }
 
-    [browser invitePeer:peerID toSession:self.session withContext:nil timeout:0];
+    NSData *contextData = nil;
+    NSURL *profileImageUrl = [[NSUserDefaults standardUserDefaults] URLForKey:k_PROFILE_IMAGE_KEY];
+    if (profileImageUrl) {
+        contextData = [NSData dataWithContentsOfURL:profileImageUrl];
+        NSLog(@"context data size=%d", contextData.length);
+    }
+    NSLog(@"inviting peer %@...", peerID);
+    [browser invitePeer:peerID toSession:self.session withContext:contextData timeout:0];
+    [self.invitedPeers addObject:peerID];
+    
 }
 
 - (void)browser:(MCNearbyServiceBrowser *)browser lostPeer:(MCPeerID *)peerID {
@@ -94,10 +112,27 @@
 
 - (void)session:(MCSession *)session peer:(MCPeerID *)peerID didChangeState:(MCSessionState)state {
     NSLog(@"state changed: %@", [self stringForPeerConnectionState:state]);
-    if (state == MCSessionStateConnected)
-        [[NSNotificationCenter defaultCenter] postNotificationName:k_PEER_JOINED object:nil userInfo:@{@"nickname": peerID.displayName}];
+    if (state == MCSessionStateConnected) {
+        [[NSNotificationCenter defaultCenter] postNotificationName:k_PEER_JOINED object:nil userInfo:@{@"peerID": peerID}];
+
+        if (! [self.invitedPeers containsObject:peerID]) {
+            // push advertising peer profile image
+            NSURL *profileImageUrl = [[NSUserDefaults standardUserDefaults] URLForKey:k_PROFILE_IMAGE_KEY];
+            if (profileImageUrl) {
+                [self.session sendResourceAtURL:profileImageUrl withName:@"profileImage" toPeer:peerID withCompletionHandler:^(NSError *error) {
+                    // Implement this block to know when the sending resource transfer completes and if there is an error.
+                    if (error) {
+                        NSLog(@"Send resource to peer [%@] completed with Error [%@]", peerID.displayName, error);
+                    }
+                    else {
+                        NSLog(@"profile image sent");
+                    }
+                }];
+            }
+        }
+    }
     else if (state == MCSessionStateNotConnected) {
-        [[NSNotificationCenter defaultCenter] postNotificationName:k_PEER_LEFT object:nil userInfo:@{@"nickname": peerID.displayName}];
+        [[NSNotificationCenter defaultCenter] postNotificationName:k_PEER_LEFT object:nil userInfo:@{@"peerID": peerID}];
     }
 }
 
@@ -122,7 +157,12 @@
     }
     NSLog(@"finish receiving resource: %@", resourceName);
 
-    [[NSNotificationCenter defaultCenter] postNotificationName:k_IMAGE_RECEIVED object:nil userInfo:@{@"url": localURL}];
+    if ([resourceName isEqualToString:@"profileImage"]) {
+        [[NSNotificationCenter defaultCenter] postNotificationName:k_PROFILE_IMAGE_RECEIVED object:nil userInfo:@{@"url": localURL, @"peerID": peerID}];
+        
+    } else {
+        [[NSNotificationCenter defaultCenter] postNotificationName:k_IMAGE_RECEIVED object:nil userInfo:@{@"url": localURL}];
+    }
 }
 
 // Streaming API not utilized in this sample code

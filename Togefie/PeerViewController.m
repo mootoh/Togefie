@@ -11,21 +11,13 @@
 #import "CameraViewController.h"
 #import "AppDelegate.h"
 #import "Postman.h"
+#import "Utils.h"
 
 @interface PeerViewController ()
 @property (nonatomic) NSProgress *progress;
 @end
 
 @implementation PeerViewController
-
-- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
-{
-    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
-    if (self) {
-        // Custom initialization
-    }
-    return self;
-}
 
 - (void)viewDidLoad
 {
@@ -71,7 +63,7 @@
 - (void) sendToPeer:(UIGestureRecognizer *)recognizer {
     CameraViewController *cvc = (CameraViewController *)self.parentViewController;
 
-    UIImage *smallerImage = [CameraViewController imageWithImage:cvc.previewView.image scaledToSize:CGSizeMake(32*5, 24*5)];
+    UIImage *smallerImage = [Utils imageWithImage:cvc.previewView.image scaledToSize:CGSizeMake(32*5, 24*5)];
     NSData *jpgData = UIImageJPEGRepresentation(smallerImage, 1.0);
     
     // send the photo
