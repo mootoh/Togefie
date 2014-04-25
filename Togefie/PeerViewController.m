@@ -23,6 +23,7 @@
 {
     [super viewDidLoad];
     // Do any additional setup after loading the view from its nib.
+    self.progressView.hidden = YES;
 
     UITapGestureRecognizer *tgr = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(sendToPeer:)];
     [self.view addGestureRecognizer:tgr];
@@ -51,12 +52,17 @@
             self.progressView.progress = (float)progress.completedUnitCount / (float)progress.totalUnitCount;
             NSLog(@"progress... %f", (float)progress.completedUnitCount / (float)progress.totalUnitCount);
         });
-        /*
+
          if (progress.completedUnitCount == progress.totalUnitCount) {
-         // Progress completed, notify delegate
-         [self.delegate observerDidComplete:self];
+             // Progress completed, notify delegate
+             dispatch_async(dispatch_get_main_queue(), ^() {
+                 self.progressView.hidden = YES;
+                 [UIView animateWithDuration:0.3 animations:^() {
+                     self.view.alpha = 0.5;
+                 }];
+             });
+
          }
-         */
     }
 }
 
@@ -92,6 +98,12 @@
         // Add KVO observer for the cancelled and completed unit count properties of NSProgress
         [progress addObserver:self forKeyPath:kProgressCancelledKeyPath options:NSKeyValueObservingOptionNew context:NULL];
         [progress addObserver:self forKeyPath:kProgressCompletedUnitCountKeyPath options:NSKeyValueObservingOptionNew context:NULL];
+        dispatch_async(dispatch_get_main_queue(), ^() {
+            self.progressView.hidden = NO;
+            [UIView animateWithDuration:0.3 animations:^() {
+                self.view.alpha = 1.0;
+            }];
+        });
     });
 }
 

@@ -140,19 +140,15 @@
     [retakeButton addTarget:self action:@selector(retake) forControlEvents:UIControlEventTouchUpInside];
     [preview addSubview:retakeButton];
 
-    AppDelegate *ad = [UIApplication sharedApplication].delegate;
-    Postman *postman = ad.postman;
-
-    int offsetX = 32;
-    for (MCPeerID *peerID in postman.session.connectedPeers) {
-        PeerViewController *pvc = [[PeerViewController alloc] initWithNibName:@"PeerViewController" bundle:nil];
-        pvc.view.frame = CGRectMake(offsetX, 426-64, 92, 92);
-        pvc.peerID = peerID;
-        pvc.nameLabel.text = peerID.displayName;
-
-        [self addChildViewController:pvc];
-        [self.view addSubview:pvc.view];
-        [pvc didMoveToParentViewController:self];
+    for (UIViewController *vc in self.childViewControllers) {
+        if (! [vc isKindOfClass:[PeerViewController class]])
+            continue;
+        PeerViewController *pvc = (PeerViewController *)vc;
+        dispatch_async(dispatch_get_main_queue(), ^() {
+            [UIView animateWithDuration:0.3 animations:^() {
+                pvc.view.alpha = 0.5;
+            }];
+        });
     }
 
     [UIView animateWithDuration:0.3 animations:^() {
@@ -170,14 +166,6 @@
         [self.previewView removeFromSuperview];
         self.previewView = nil;
     }
-    /*
-    for (UIViewController *vc in self.childViewControllers) {
-        if ([vc isKindOfClass:[PeerViewController class]]) {
-            [vc.view removeFromSuperview];
-            [vc removeFromParentViewController];
-        }
-    }
-     */
 }
 
 - (void) panPhoto:(UIGestureRecognizer *)gestureRecognizer
@@ -330,18 +318,6 @@
         }
     }
 }
-
-
-/*
-#pragma mark - Navigation
-
-// In a storyboard-based application, you will often want to do a little preparation before navigation
-- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
-{
-    // Get the new view controller using [segue destinationViewController].
-    // Pass the selected object to the new view controller.
-}
-*/
 
 #pragma mark - Advertiser delegates
 
