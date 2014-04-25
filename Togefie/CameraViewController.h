@@ -8,11 +8,9 @@
 
 #import <UIKit/UIKit.h>
 #import <MultipeerConnectivity/MultipeerConnectivity.h>
+#import "PeerViewController.h"
 
-@class MCPeerID;
-@class MCSession;
-
-@interface CameraViewController : UIImagePickerController <UIImagePickerControllerDelegate, MCNearbyServiceAdvertiserDelegate>
+@interface CameraViewController : UIImagePickerController <UIImagePickerControllerDelegate, MCNearbyServiceAdvertiserDelegate, PeerViewControllerDelegate>
 
 @property (nonatomic) UIImageView *previewView;
 

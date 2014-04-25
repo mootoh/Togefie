@@ -14,6 +14,8 @@
 #import "PeerViewController.h"
 #import "Utils.h"
 
+static const int k_RETAKE_BUTTON_TAG = 19;
+
 @interface CameraViewController ()
 @property (nonatomic) UIImageView *receivedView;
 @end
@@ -119,53 +121,69 @@
 
 - (void) imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info {
     // show a dialog to choose a peer to send the photo
-    
-    if (self.previewView) {
-        [self.previewView removeFromSuperview];
-        self.previewView = nil;
-    }
-    
-    UIImage *imageToSave = (UIImage *)[info objectForKey:UIImagePickerControllerOriginalImage];
-    UIImageView *preview = [[UIImageView alloc] initWithImage:imageToSave];
-    preview.userInteractionEnabled = YES;
-    preview.frame = CGRectMake(0, 0, picker.view.frame.size.width, 426);
-    self.previewView = preview;
-    preview.alpha = 0.0;
-    [picker.cameraOverlayView addSubview:preview];
+    dispatch_async(dispatch_get_main_queue(), ^() {
+        if (self.previewView) {
+            [self.previewView removeFromSuperview];
+            self.previewView = nil;
+        }
+        
+        UIImage *imageToSave = (UIImage *)[info objectForKey:UIImagePickerControllerOriginalImage];
+        UIImageView *preview = [[UIImageView alloc] initWithImage:imageToSave];
+        preview.userInteractionEnabled = YES;
+        preview.frame = CGRectMake(0, 0, picker.view.frame.size.width, 426);
+        self.previewView = preview;
+        preview.alpha = 0.0;
+        [picker.cameraOverlayView addSubview:preview];
+        
+        UIButton *retakeButton = [UIButton buttonWithType:UIButtonTypeCustom];
+        retakeButton.tag = k_RETAKE_BUTTON_TAG;
+        retakeButton.frame = CGRectMake(160, 320, 66, 66);
+        retakeButton.center = picker.view.center;
+        [retakeButton setBackgroundImage:[UIImage imageNamed:@"retake"] forState:UIControlStateNormal];
+        [retakeButton addTarget:self action:@selector(retake) forControlEvents:UIControlEventTouchUpInside];
+        [preview addSubview:retakeButton];
 
-    UIButton *retakeButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    retakeButton.frame = CGRectMake(160, 320, 66, 66);
-    retakeButton.center = picker.view.center;
-    [retakeButton setBackgroundImage:[UIImage imageNamed:@"retake"] forState:UIControlStateNormal];
-    [retakeButton addTarget:self action:@selector(retake) forControlEvents:UIControlEventTouchUpInside];
-    [preview addSubview:retakeButton];
-
-    for (UIViewController *vc in self.childViewControllers) {
-        if (! [vc isKindOfClass:[PeerViewController class]])
-            continue;
-        PeerViewController *pvc = (PeerViewController *)vc;
-        dispatch_async(dispatch_get_main_queue(), ^() {
+        for (UIViewController *vc in self.childViewControllers) {
+            if (! [vc isKindOfClass:[PeerViewController class]])
+                continue;
+            PeerViewController *pvc = (PeerViewController *)vc;
+            CGFloat y = pvc.view.center.y;
+            
             [UIView animateWithDuration:0.3 animations:^() {
                 pvc.view.alpha = 0.5;
+                pvc.view.center = CGPointMake(pvc.view.center.x, y - 300);
+                pvc.hidden = NO;
             }];
-        });
-    }
-
-    [UIView animateWithDuration:0.3 animations:^() {
-        preview.alpha = 1.0;
-    }];
-    
-//    UIPanGestureRecognizer *pgr = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(panPhoto:)];
-//    [preview addGestureRecognizer:pgr];
-
-    return;
+        }
+        
+        [UIView animateWithDuration:0.3 animations:^() {
+            preview.alpha = 1.0;
+        }];
+    });
 }
 
 - (void) retake {
-    if (self.previewView) {
-        [self.previewView removeFromSuperview];
-        self.previewView = nil;
-    }
+    dispatch_async(dispatch_get_main_queue(), ^() {
+        if (self.previewView) {
+            [self.previewView removeFromSuperview];
+            self.previewView = nil;
+        }
+        
+        for (UIViewController *vc in self.childViewControllers) {
+            if (! [vc isKindOfClass:[PeerViewController class]])
+                continue;
+            PeerViewController *pvc = (PeerViewController *)vc;
+            if (pvc.hidden)
+                continue;
+            CGFloat y = pvc.view.center.y;
+            
+            [UIView animateWithDuration:0.3 animations:^() {
+                pvc.view.alpha = 0;
+                pvc.view.center = CGPointMake(pvc.view.center.x, y + 300);
+                pvc.hidden = YES;
+            }];
+        };
+    });
 }
 
 - (void) panPhoto:(UIGestureRecognizer *)gestureRecognizer
@@ -252,10 +270,6 @@
     NSDictionary *dict = notification.userInfo;
     MCPeerID *peerID = dict[@"peerID"];
     NSLog(@"peer %@ joined", peerID.displayName);
-    /*
-    UILabel *joined = [[UILabel alloc] initWithFrame:CGRectMake(240, 300, 80, 32)];
-    joined.text = nickname;
-     */
 
     for (UIViewController *vc in self.childViewControllers) {
         if (! [vc isKindOfClass:[PeerViewController class]])
@@ -268,17 +282,7 @@
         }
     }
 
-    dispatch_async(dispatch_get_main_queue(), ^() {
-        PeerViewController *pvc = [[PeerViewController alloc] initWithNibName:@"PeerViewController" bundle:nil];
-        
-        pvc.view.frame = CGRectMake(32, 426-64, 92, 92);
-        pvc.peerID = peerID;
-        pvc.nameLabel.text = peerID.displayName;
-
-        [self addChildViewController:pvc];
-        [self.view addSubview:pvc.view];
-        [pvc didMoveToParentViewController:self];
-    });
+    [self createPeerView:peerID image:nil];
 }
 
 - (void) peerLeft:(NSNotification *)notification {
@@ -291,8 +295,19 @@
             continue;
         PeerViewController *pvc = (PeerViewController *)vc;
         if (pvc && [pvc.peerID isEqual:peerID]) {
-            [pvc removeFromParentViewController];
-            [pvc.view removeFromSuperview];
+            dispatch_async(dispatch_get_main_queue(), ^() {
+                pvc.view.center = self.view.center;
+                pvc.view.alpha = 1.0;
+                pvc.hidden = NO;
+
+                [UIView animateWithDuration:1 animations:^() {
+                    pvc.view.alpha = 0.0;
+                    pvc.view.center = CGPointMake(pvc.view.center.x, -100);
+                } completion:^(BOOL finished) {
+                    [pvc removeFromParentViewController];
+                    [pvc.view removeFromSuperview];
+                }];
+            });
             return;
         }
     }
@@ -326,21 +341,50 @@
 }
 
 - (void)advertiser:(MCNearbyServiceAdvertiser *)advertiser didReceiveInvitationFromPeer:(MCPeerID *)peerID withContext:(NSData *)context invitationHandler:(void (^)(BOOL, MCSession *))invitationHandler {
-    PeerViewController *pvc = [[PeerViewController alloc] initWithNibName:@"PeerViewController" bundle:nil];
-
-    pvc.view.frame = CGRectMake(32, 426-64, 92, 92);
-    pvc.peerID = peerID;
-    pvc.nameLabel.text = peerID.displayName;
     UIImage *image = [UIImage imageWithData:context];
-    if (image)
-        pvc.imageView.image = image;
+    [self createPeerView:peerID image:image];
     
-    [self addChildViewController:pvc];
-    [self.view addSubview:pvc.view];
-    [pvc didMoveToParentViewController:self];
-
     AppDelegate *ad = [UIApplication sharedApplication].delegate;
     invitationHandler(YES, ad.postman.session);
+}
+
+#pragma mark -
+
+- (void) createPeerView:(MCPeerID *)peerID image:(UIImage *)image {
+    dispatch_async(dispatch_get_main_queue(), ^() {
+        PeerViewController *pvc = [[PeerViewController alloc] initWithNibName:@"PeerViewController" bundle:nil];
+        pvc.hidden = NO;
+        pvc.delegate = self;
+        
+        pvc.view.frame = CGRectMake(32, 426-64, 92, 92);
+        pvc.view.center = CGPointMake(self.view.center.x, self.view.center.y);
+
+        pvc.peerID = peerID;
+        pvc.nameLabel.text = peerID.displayName;
+        if (image)
+            pvc.imageView.image = image;
+        
+        [self addChildViewController:pvc];
+        [self.view addSubview:pvc.view];
+        [pvc didMoveToParentViewController:self];
+        
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            [UIView animateWithDuration:0.5 animations:^() {
+                pvc.view.center = CGPointMake(self.view.center.x, self.view.center.y + 400);
+                pvc.view.alpha = 0;
+            } completion:^(BOOL finished) {
+                pvc.hidden = YES;
+            }];
+        });
+    });
+}
+
+- (void) beginSend:(PeerViewController *)pvc {
+    [[self.view viewWithTag:k_RETAKE_BUTTON_TAG] removeFromSuperview];
+}
+
+- (void) didSend:(PeerViewController *)pvc {
+    [self retake];
 }
 
 @end

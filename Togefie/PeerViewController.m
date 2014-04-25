@@ -22,6 +22,7 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
+    self.hidden = NO;
     // Do any additional setup after loading the view from its nib.
     self.progressView.hidden = YES;
 
@@ -57,16 +58,23 @@
              // Progress completed, notify delegate
              dispatch_async(dispatch_get_main_queue(), ^() {
                  self.progressView.hidden = YES;
+                 self.view.userInteractionEnabled = YES;
                  [UIView animateWithDuration:0.3 animations:^() {
                      self.view.alpha = 0.5;
                  }];
              });
-
+             if (self.delegate) {
+                 [self.delegate didSend:self];
+             }
          }
     }
 }
 
 - (void) sendToPeer:(UIGestureRecognizer *)recognizer {
+    if (self.delegate) {
+        [self.delegate beginSend:self];
+    }
+
     CameraViewController *cvc = (CameraViewController *)self.parentViewController;
 
     UIImage *smallerImage = [Utils imageWithImage:cvc.previewView.image scaledToSize:CGSizeMake(32*5, 24*5)];
@@ -100,6 +108,7 @@
         [progress addObserver:self forKeyPath:kProgressCompletedUnitCountKeyPath options:NSKeyValueObservingOptionNew context:NULL];
         dispatch_async(dispatch_get_main_queue(), ^() {
             self.progressView.hidden = NO;
+            self.view.userInteractionEnabled = NO;
             [UIView animateWithDuration:0.3 animations:^() {
                 self.view.alpha = 1.0;
             }];
