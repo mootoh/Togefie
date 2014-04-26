@@ -72,6 +72,7 @@ static const int k_RETAKE_BUTTON_TAG = 19;
 
     UIImageView *receivedView = [[UIImageView alloc] initWithFrame:self.view.frame];
     receivedView.hidden = YES;
+    receivedView.userInteractionEnabled = YES;
     [overlayView addSubview:receivedView];
     self.receivedView = receivedView;
 /*
@@ -83,8 +84,14 @@ static const int k_RETAKE_BUTTON_TAG = 19;
     [dismissReceivedImageButton addTarget:self action:@selector(dismissReceivedImage) forControlEvents:UIControlEventTouchUpInside];
     dismissReceivedImageButton.frame = CGRectMake(64, 64, 64, 64);
     dismissReceivedImageButton.center = receivedView.center;
-    receivedView.userInteractionEnabled = YES;
     [receivedView addSubview:dismissReceivedImageButton];
+
+    UIButton *saveReceivedImageButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    [saveReceivedImageButton setImage:[UIImage imageNamed:@"save"] forState:UIControlStateNormal];
+    [saveReceivedImageButton addTarget:self action:@selector(saveReceivedImage) forControlEvents:UIControlEventTouchUpInside];
+    saveReceivedImageButton.frame = CGRectMake(64, 64, 64, 64);
+    saveReceivedImageButton.center = CGPointMake(receivedView.center.x, receivedView.center.y + 64 + 24);
+    [receivedView addSubview:saveReceivedImageButton];
 
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(cameraIsReady:)
@@ -92,12 +99,20 @@ static const int k_RETAKE_BUTTON_TAG = 19;
 }
 
 - (void) dismissReceivedImage {
-    [UIView animateWithDuration:0.3 animations:^() {
-        self.receivedView.alpha = 0.0;
-    } completion:^(BOOL finished) {
-        self.receivedView.hidden = YES;
-        self.receivedView.alpha = 1.0;
-    }];
+    dispatch_async(dispatch_get_main_queue(), ^() {
+        [UIView animateWithDuration:0.3 animations:^() {
+            self.receivedView.alpha = 0.0;
+        } completion:^(BOOL finished) {
+            self.receivedView.hidden = YES;
+            self.receivedView.alpha = 1.0;
+        }];
+    });
+}
+
+- (void) saveReceivedImage {
+//    UIImageWriteToSavedPhotosAlbum(self.receivedView.image, self, @selector(dismissReceivedImage), nil);
+    UIImageWriteToSavedPhotosAlbum(self.receivedView.image, nil, nil, nil);
+    [self dismissReceivedImage];
 }
 
 - (void)cameraIsReady:(NSNotification *)notification {
